@@ -2,7 +2,7 @@
 
 This document explains the rationale behind the unit tests in the `@collabdt/core` package: what patterns are tested, why each file was chosen, and why certain files are intentionally left untested.
 
-Tests run on **Vitest** (`yarn test:unit`). `*.test.ts` files run in the `node` environment (pure logic); `*.test.tsx` component/hook tests opt into jsdom with a per-file `// @vitest-environment jsdom` pragma and use Testing Library. Test files are **co-located** next to the source they cover (e.g. `roles.test.ts` sits beside `roles.ts`).
+Tests run on **Jest** (`yarn test`), transformed via `next/jest`'s SWC pipeline. All test files run in the `jsdom` environment and use Testing Library. Test files are **co-located** next to the source they cover (e.g. `roles.test.ts` sits beside `roles.ts`).
 
 > The HTTP adapter pattern (`createHttpAdapter`) is **not** in this package — it knows about app-specific route URLs and lives in the consuming app (cdt-na: `src/hooks/__tests__/httpAdapter.test.ts`). Its reference test is documented in that app's `TESTING.md`.
 
@@ -161,7 +161,7 @@ The following files instantiate `OBC.Components`, manipulate `THREE.Scene` / `TH
 
 ### i18n message files
 
-`src/i18n/messages/*.json` are data, not code. Translation correctness is verified by the i18n tooling, not Vitest.
+`src/i18n/messages/*.json` are data, not code. Translation correctness is verified by the i18n tooling, not Jest.
 
 ### Charting/sensor display
 

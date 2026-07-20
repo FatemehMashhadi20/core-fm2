@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock sonner so the toast call is observable and no real UI dep loads in node env.
-vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
+jest.mock('sonner', () => ({ toast: { error: jest.fn() } }))
 
 import { toast } from 'sonner'
 import { handleApiError } from './errorHandler'
 
-const toastError = vi.mocked(toast.error)
+const toastError = jest.mocked(toast.error)
 
 describe('handleApiError', () => {
   beforeEach(() => toastError.mockClear())

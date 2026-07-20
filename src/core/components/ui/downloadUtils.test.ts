@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import { downloadFile, downloadDbFile, downloadFromUrl, downloadBlobUrl } from './downloadUtils'
 
-vi.mock('../viewers/map/utils/dateName', () => ({
+jest.mock('../viewers/map/utils/dateName', () => ({
   dateName: (name: string) => `STAMP_${name}`,
 }))
 
@@ -13,15 +12,15 @@ function lastAnchor(): HTMLAnchorElement {
 }
 
 describe('downloadFile', () => {
-  let clickSpy: ReturnType<typeof vi.spyOn>
-  let appendSpy: ReturnType<typeof vi.spyOn>
-  let removeSpy: ReturnType<typeof vi.spyOn>
+  let clickSpy: ReturnType<typeof jest.spyOn>
+  let appendSpy: ReturnType<typeof jest.spyOn>
+  let removeSpy: ReturnType<typeof jest.spyOn>
 
   beforeEach(() => {
     document.body.innerHTML = ''
-    clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
-    appendSpy = vi.spyOn(document.body, 'appendChild')
-    removeSpy = vi.spyOn(document.body, 'removeChild')
+    clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    appendSpy = jest.spyOn(document.body, 'appendChild')
+    removeSpy = jest.spyOn(document.body, 'removeChild')
   })
 
   afterEach(() => {
@@ -60,15 +59,15 @@ describe('downloadFile', () => {
 })
 
 describe('downloadDbFile / downloadFromUrl / downloadBlobUrl', () => {
-  let appendSpy: ReturnType<typeof vi.spyOn>
+  let appendSpy: ReturnType<typeof jest.spyOn>
 
   beforeEach(() => {
     document.body.innerHTML = ''
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
-    appendSpy = vi.spyOn(document.body, 'appendChild')
+    jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    appendSpy = jest.spyOn(document.body, 'appendChild')
   })
 
-  afterEach(() => vi.restoreAllMocks())
+  afterEach(() => jest.restoreAllMocks())
 
   it('downloadDbFile pulls url + name from the file row', () => {
     downloadDbFile({ url: 'http://x.com/a', name: 'a.csv' } as any, { useOriginalName: true })

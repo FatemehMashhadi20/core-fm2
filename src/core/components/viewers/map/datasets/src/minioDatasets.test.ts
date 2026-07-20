@@ -7,16 +7,16 @@ const realFetch = global.fetch
 const TEST_MINIO_URL = 'https://minio.example.com/'
 
 beforeEach(() => {
-  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
 afterEach(() => {
   global.fetch = realFetch
-  vi.restoreAllMocks()
+  jest.restoreAllMocks()
 })
 
 function mockFilesFetch(files: unknown[]) {
-  global.fetch = vi.fn().mockImplementation((url: string) => {
+  global.fetch = jest.fn().mockImplementation((url: string) => {
     if (url === '/api/files') {
       return Promise.resolve({ ok: true, json: async () => ({ files }) })
     }
@@ -36,12 +36,12 @@ const validRow = {
 
 describe('fetchOrganizationalMinioDatasets', () => {
   it('returns [] when /api/files responds non-ok', async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }) as any
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }) as any
     await expect(fetchOrganizationalMinioDatasets(7, new Set(), TEST_MINIO_URL)).resolves.toEqual([])
   })
 
   it('returns [] when /api/files throws', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('net down')) as any
+    global.fetch = jest.fn().mockRejectedValue(new Error('net down')) as any
     await expect(fetchOrganizationalMinioDatasets(7, new Set(), TEST_MINIO_URL)).resolves.toEqual([])
   })
 
@@ -100,7 +100,7 @@ describe('fetchOrganizationalMinioDatasets', () => {
     const [ds] = await fetchOrganizationalMinioDatasets(42, new Set(), TEST_MINIO_URL)
 
     const features = { type: 'FeatureCollection', features: [] }
-    const downstreamFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => features })
+    const downstreamFetch = jest.fn().mockResolvedValue({ ok: true, json: async () => features })
     global.fetch = downstreamFetch as any
 
     await expect(ds.getFeatures()).resolves.toEqual(features)
@@ -112,7 +112,7 @@ describe('fetchOrganizationalMinioDatasets', () => {
     mockFilesFetch([validRow])
     const [ds] = await fetchOrganizationalMinioDatasets(42, new Set(), TEST_MINIO_URL)
 
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 403, json: async () => ({}) }) as any
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 403, json: async () => ({}) }) as any
     await expect(ds.getFeatures()).rejects.toThrow(/403/)
   })
 })

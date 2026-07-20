@@ -1,38 +1,28 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { act, renderHook } from '@testing-library/react'
 
-const {
-  mutateMock,
-  downloadFileMock,
-  setOpenInfoMock,
-  filesDispatchMock,
-  menusDispatchMock,
-  setViewMock,
-} = vi.hoisted(() => ({
-  mutateMock: vi.fn(),
-  downloadFileMock: vi.fn(),
-  setOpenInfoMock: vi.fn(),
-  filesDispatchMock: vi.fn(),
-  menusDispatchMock: vi.fn(),
-  setViewMock: vi.fn(),
-}))
+const mockMutate = jest.fn()
+const mockDownloadFile = jest.fn()
+const mockSetOpenInfo = jest.fn()
+const mockFilesDispatch = jest.fn()
+const mockMenusDispatch = jest.fn()
+const mockSetView = jest.fn()
 
-vi.mock('swr', () => ({ mutate: (...a: unknown[]) => mutateMock(...a) }))
-vi.mock('./downloadUtils', () => ({
-  downloadFile: (...a: unknown[]) => downloadFileMock(...a),
+jest.mock('swr', () => ({ mutate: (...a: unknown[]) => mockMutate(...a) }))
+jest.mock('./downloadUtils', () => ({
+  downloadFile: (...a: unknown[]) => mockDownloadFile(...a),
 }))
-vi.mock('../../../../store', () => ({
-  useFilesContext: () => ({ dispatch: filesDispatchMock }),
-  useMenusContext: () => ({ dispatch: menusDispatchMock, setView: setViewMock }),
+jest.mock('../../../../store', () => ({
+  useFilesContext: () => ({ dispatch: mockFilesDispatch }),
+  useMenusContext: () => ({ dispatch: mockMenusDispatch, setView: mockSetView }),
 }))
-vi.mock('../../Sidebar', () => ({
-  useSidebar: () => ({ setOpenInfo: setOpenInfoMock }),
+jest.mock('../../Sidebar', () => ({
+  useSidebar: () => ({ setOpenInfo: mockSetOpenInfo }),
 }))
-vi.mock('../../../../types', () => ({
+jest.mock('../../../../types', () => ({
   ViewerNames: { files: 'files' },
 }))
 
@@ -48,16 +38,16 @@ const makeFile = (overrides: Partial<any> = {}) => ({
 
 function setup(extra: Partial<Parameters<typeof useFileActions>[0]> = {}) {
   const files: any[] = [makeFile()]
-  const setFiles = vi.fn((updater: any) => {
+  const setFiles = jest.fn((updater: any) => {
     const next = typeof updater === 'function' ? updater(files) : updater
     files.splice(0, files.length, ...next)
   })
-  const handleDeleteFile = vi.fn()
-  const onView = vi.fn()
-  const onDelete = vi.fn()
-  const onDownload = vi.fn()
-  const onGhost = vi.fn()
-  const onInfo = vi.fn()
+  const handleDeleteFile = jest.fn()
+  const onView = jest.fn()
+  const onDelete = jest.fn()
+  const onDownload = jest.fn()
+  const onGhost = jest.fn()
+  const onInfo = jest.fn()
   const buildingId = 11
   const hook = renderHook(() =>
     useFileActions({
@@ -77,12 +67,12 @@ function setup(extra: Partial<Parameters<typeof useFileActions>[0]> = {}) {
 }
 
 beforeEach(() => {
-  mutateMock.mockReset()
-  downloadFileMock.mockReset()
-  setOpenInfoMock.mockReset()
-  filesDispatchMock.mockReset()
-  menusDispatchMock.mockReset()
-  setViewMock.mockReset()
+  mockMutate.mockReset()
+  mockDownloadFile.mockReset()
+  mockSetOpenInfo.mockReset()
+  mockFilesDispatch.mockReset()
+  mockMenusDispatch.mockReset()
+  mockSetView.mockReset()
 })
 
 describe('useFileActions', () => {
@@ -95,13 +85,13 @@ describe('useFileActions', () => {
     expect(hook.result.current.deleteDialog.itemName).toBe('a.csv')
 
     await act(async () => {
-      await hook.result.current.deleteDialog.onConfirm({ preventDefault: vi.fn() } as any)
+      await hook.result.current.deleteDialog.onConfirm({ preventDefault: jest.fn() } as any)
     })
 
     expect(handleDeleteFile).toHaveBeenCalledWith(file)
     expect(onDelete).toHaveBeenCalledWith(file)
     expect(setFiles).toHaveBeenCalled()
-    expect(mutateMock).toHaveBeenCalledWith('/api/files/building/11')
+    expect(mockMutate).toHaveBeenCalledWith('/api/files/building/11')
     expect(hook.result.current.deleteDialog.isOpen).toBe(false)
   })
 
@@ -119,7 +109,7 @@ describe('useFileActions', () => {
     const { hook } = setup({ onDownload: undefined })
     const file = makeFile()
     await act(async () => { await hook.result.current.handleAction('download', file as any) })
-    expect(downloadFileMock).toHaveBeenCalledWith(file.url, file)
+    expect(mockDownloadFile).toHaveBeenCalledWith(file.url, file)
   })
 
   it('download prefers the onDownload callback when provided', async () => {
@@ -127,7 +117,7 @@ describe('useFileActions', () => {
     const file = makeFile()
     await act(async () => { await hook.result.current.handleAction('download', file as any) })
     expect(onDownload).toHaveBeenCalledWith(file)
-    expect(downloadFileMock).not.toHaveBeenCalled()
+    expect(mockDownloadFile).not.toHaveBeenCalled()
   })
 
   it('ghost toggles isGhost via setFiles and calls onGhost with the new state', async () => {
@@ -143,10 +133,10 @@ describe('useFileActions', () => {
     const file = makeFile()
     await act(async () => { await hook.result.current.handleAction('info', file as any) })
 
-    expect(setOpenInfoMock).toHaveBeenCalledWith(false)
-    expect(filesDispatchMock).toHaveBeenCalledWith({ type: 'SET_CURRENT_FILE', payload: { currentFile: file } })
-    expect(menusDispatchMock).toHaveBeenCalledWith({ type: 'SET_VIEWER', payload: { currentViewer: 'files' } })
-    expect(setViewMock).toHaveBeenCalledWith('detail')
+    expect(mockSetOpenInfo).toHaveBeenCalledWith(false)
+    expect(mockFilesDispatch).toHaveBeenCalledWith({ type: 'SET_CURRENT_FILE', payload: { currentFile: file } })
+    expect(mockMenusDispatch).toHaveBeenCalledWith({ type: 'SET_VIEWER', payload: { currentViewer: 'files' } })
+    expect(mockSetView).toHaveBeenCalledWith('detail')
   })
 
   it('info prefers the onInfo callback', async () => {
@@ -154,6 +144,6 @@ describe('useFileActions', () => {
     const file = makeFile()
     await act(async () => { await hook.result.current.handleAction('info', file as any) })
     expect(onInfo).toHaveBeenCalledWith(file)
-    expect(filesDispatchMock).not.toHaveBeenCalled()
+    expect(mockFilesDispatch).not.toHaveBeenCalled()
   })
 })

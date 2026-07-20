@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { act, render, screen, fireEvent } from '@testing-library/react'
 
-const { deleteCommentMock, toolsDispatchMock, menusDispatchMock, toastSuccess } = vi.hoisted(() => ({
-  deleteCommentMock: vi.fn(),
-  toolsDispatchMock: vi.fn(),
-  menusDispatchMock: vi.fn(),
-  toastSuccess: vi.fn(),
-}))
+const mockDeleteComment = jest.fn()
+const mockToolsDispatch = jest.fn()
+const mockMenusDispatch = jest.fn()
+const mockToastSuccess = jest.fn()
 
 const sampleComments: any[] = [
   { id: 1, text: 'roads need fixing', viewer: 'map', buildingId: null, authorId: 1, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
@@ -18,25 +15,25 @@ const sampleComments: any[] = [
   { id: 3, text: 'paint peeling',     viewer: 'map', buildingId: 11, authorId: 1, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
 ]
 
-vi.mock('next-intl', () => ({
+jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
-vi.mock('../../../store', async () => {
-  const React = await vi.importActual<typeof import('react')>('react')
+jest.mock('../../../store', () => {
+  const React = jest.requireActual<typeof import('react')>('react')
   return {
     usePermissions: () => ({ ability: { can: () => true } }),
     BuildingsContext: React.createContext({ state: { buildings: { building: { id: 11 } } } }),
     MenusContext: React.createContext({
       state: { menus: { currentViewer: 'map', commentsVisibleInViewer: ['map'] } },
-      dispatch: (...a: unknown[]) => menusDispatchMock(...a),
+      dispatch: (...a: unknown[]) => mockMenusDispatch(...a),
     }),
     ToolsContext: React.createContext({
       state: { tools: { currentToolId: null } },
-      dispatch: (...a: unknown[]) => toolsDispatchMock(...a),
+      dispatch: (...a: unknown[]) => mockToolsDispatch(...a),
     }),
   }
 })
-vi.mock('../CollapsibleSection', () => ({
+jest.mock('../CollapsibleSection', () => ({
   CollapsibleSection: ({ title, itemCount, onAddItem, children, switchVariant }: any) => (
     <div data-testid="collapsible-section">
       <span>{title}</span>
@@ -47,10 +44,10 @@ vi.mock('../CollapsibleSection', () => ({
     </div>
   ),
 }))
-vi.mock('../SearchInput', () => ({
+jest.mock('../SearchInput', () => ({
   SearchInput: (props: any) => <input role="searchbox" {...props} />,
 }))
-vi.mock('./CollapsibleCommentItem', () => ({
+jest.mock('./CollapsibleCommentItem', () => ({
   CollapsibleCommentItem: ({ comment, onAction }: any) => (
     <div data-testid={`comment-${comment.id}`}>
       <span>{comment.text}</span>
@@ -58,21 +55,21 @@ vi.mock('./CollapsibleCommentItem', () => ({
     </div>
   ),
 }))
-vi.mock('../../../hooks/comments/comments', () => ({
+jest.mock('../../../hooks/comments/comments', () => ({
   useComments: () => ({ comments: sampleComments }),
-  useComment: () => ({ deleteComment: deleteCommentMock }),
+  useComment: () => ({ deleteComment: mockDeleteComment }),
 }))
-vi.mock('sonner', () => ({
-  toast: { success: (...a: unknown[]) => toastSuccess(...a), error: vi.fn() },
+jest.mock('sonner', () => ({
+  toast: { success: (...a: unknown[]) => mockToastSuccess(...a), error: jest.fn() },
 }))
 
 import { CommentsSection } from './CommentsSection'
 
 beforeEach(() => {
-  deleteCommentMock.mockReset()
-  toolsDispatchMock.mockReset()
-  menusDispatchMock.mockReset()
-  toastSuccess.mockReset()
+  mockDeleteComment.mockReset()
+  mockToolsDispatch.mockReset()
+  mockMenusDispatch.mockReset()
+  mockToastSuccess.mockReset()
 })
 
 describe('CommentsSection', () => {
@@ -99,14 +96,14 @@ describe('CommentsSection', () => {
     await act(async () => {
       fireEvent.click(screen.getAllByRole('button', { name: 'delete' })[0])
     })
-    expect(toastSuccess).toHaveBeenCalledWith('commentDeleted')
-    expect(deleteCommentMock).toHaveBeenCalled()
+    expect(mockToastSuccess).toHaveBeenCalledWith('commentDeleted')
+    expect(mockDeleteComment).toHaveBeenCalled()
   })
 
   it('Add Comment dispatches the right tool id based on the current viewer', () => {
     render(<CommentsSection />)
     fireEvent.click(screen.getByLabelText('add'))
-    expect(toolsDispatchMock).toHaveBeenCalledWith({
+    expect(mockToolsDispatch).toHaveBeenCalledWith({
       type: 'SET-TOOL',
       payload: { currentToolId: 'map-add-comment' },
     })
@@ -115,7 +112,7 @@ describe('CommentsSection', () => {
   it('toggle-visibility dispatches HIDE_COMMENTS_IN_VIEWER when currently visible', () => {
     render(<CommentsSection />)
     fireEvent.click(screen.getByLabelText('toggle-visibility'))
-    expect(menusDispatchMock).toHaveBeenCalledWith({
+    expect(mockMenusDispatch).toHaveBeenCalledWith({
       type: 'HIDE_COMMENTS_IN_VIEWER',
       payload: { viewer: 'map' },
     })

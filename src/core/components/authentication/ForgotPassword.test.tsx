@@ -1,25 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 
-vi.mock('./AuthPage', () => ({
+jest.mock('./AuthPage', () => ({
   AuthPage: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useAuthTheme: () => 'dark',
 }))
-vi.mock('next-intl', () => ({
+jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
-vi.mock('next/link', () => ({ __esModule: true, default: ({ children, href }: any) => <a href={href}>{children}</a> }))
-vi.mock('next/image', () => ({ __esModule: true, default: (props: any) => <img alt="" {...props} /> }))
+jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href }: any) => <a href={href}>{children}</a> }))
+jest.mock('next/image', () => ({ __esModule: true, default: (props: any) => <img alt="" {...props} /> }))
 
-vi.mock('../ui', () => ({
+jest.mock('../ui', () => ({
   Button: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
   Input: (props: any) => <input {...props} />,
 }))
-vi.mock('./PasswordError', () => ({
+jest.mock('./PasswordError', () => ({
   PasswordError: ({ message }: { message?: string }) =>
     message ? <div data-testid="password-error">{message}</div> : null,
 }))

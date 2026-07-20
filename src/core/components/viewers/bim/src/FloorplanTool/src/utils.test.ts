@@ -32,18 +32,18 @@ describe('normalizeElevation', () => {
 
 describe('getStoreyItemIds', () => {
   it('returns the array from getItemsByQuery on success', async () => {
-    const model = { getItemsByQuery: vi.fn().mockResolvedValue([1, 2, 3]) }
+    const model = { getItemsByQuery: jest.fn().mockResolvedValue([1, 2, 3]) }
     await expect(getStoreyItemIds(model, 99)).resolves.toEqual([1, 2, 3])
     expect(model.getItemsByQuery).toHaveBeenCalledTimes(1)
   })
 
   it('returns [] when getItemsByQuery returns a non-array', async () => {
-    const model = { getItemsByQuery: vi.fn().mockResolvedValue(null) }
+    const model = { getItemsByQuery: jest.fn().mockResolvedValue(null) }
     await expect(getStoreyItemIds(model, 99)).resolves.toEqual([])
   })
 
   it('returns [] when getItemsByQuery throws', async () => {
-    const model = { getItemsByQuery: vi.fn().mockRejectedValue(new Error('relation not indexed')) }
+    const model = { getItemsByQuery: jest.fn().mockRejectedValue(new Error('relation not indexed')) }
     await expect(getStoreyItemIds(model, 99)).resolves.toEqual([])
   })
 })

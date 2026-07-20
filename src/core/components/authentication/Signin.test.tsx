@@ -1,36 +1,35 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { act, render, screen, fireEvent } from '@testing-library/react'
 
-const { signInMock } = vi.hoisted(() => ({ signInMock: vi.fn() }))
+const mockSignIn = jest.fn()
 
-vi.mock('./AuthPage', () => ({
+jest.mock('./AuthPage', () => ({
   AuthPage: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useAuthTheme: () => 'dark',
 }))
-vi.mock('next-intl', () => ({
+jest.mock('next-intl', () => ({
   useTranslations: () => (key: string, vars?: Record<string, string>) =>
     vars ? `${key}:${Object.values(vars).join(',')}` : key,
 }))
-vi.mock('next-auth/react', () => ({
-  signIn: (...args: unknown[]) => signInMock(...args),
+jest.mock('next-auth/react', () => ({
+  signIn: (...args: unknown[]) => mockSignIn(...args),
 }))
-vi.mock('next/navigation', () => ({
+jest.mock('next/navigation', () => ({
   useParams: () => ({ instance: 'canada' }),
   useSearchParams: () => ({ get: () => null }),
 }))
-vi.mock('react-google-recaptcha', () => ({
+jest.mock('react-google-recaptcha', () => ({
   __esModule: true,
   default: () => <div data-testid="recaptcha" />,
 }))
-vi.mock('sonner', () => ({
-  toast: { success: vi.fn(), error: vi.fn() },
+jest.mock('sonner', () => ({
+  toast: { success: jest.fn(), error: jest.fn() },
   Toaster: () => null,
 }))
-vi.mock('../ui', () => ({
+jest.mock('../ui', () => ({
   Button: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
   GoogleIcon: () => <span>G</span>,
   Input: (props: any) => <input {...props} />,
@@ -39,7 +38,7 @@ vi.mock('../ui', () => ({
 
 import { SignIn } from './Signin'
 
-beforeEach(() => signInMock.mockReset())
+beforeEach(() => mockSignIn.mockReset())
 
 describe('SignIn', () => {
   it('renders the email/password form on first render', () => {
@@ -49,7 +48,7 @@ describe('SignIn', () => {
   })
 
   it('calls signIn("credentials") with the submitted email + password', async () => {
-    signInMock.mockResolvedValue({})
+    mockSignIn.mockResolvedValue({})
     render(<SignIn />)
 
     const [emailInput, passwordInput] = screen.getAllByPlaceholderText(/placeholder/i)
@@ -60,14 +59,14 @@ describe('SignIn', () => {
       fireEvent.click(screen.getByRole('button', { name: /login/i }))
     })
 
-    expect(signInMock).toHaveBeenCalledWith(
+    expect(mockSignIn).toHaveBeenCalledWith(
       'credentials',
       expect.objectContaining({ email: 'a@b.com', password: 'pw1234567890', redirect: false }),
     )
   })
 
   it('shows "Invalid email or password" on invalid_credentials', async () => {
-    signInMock.mockResolvedValue({ error: 'bad', code: 'invalid_credentials' })
+    mockSignIn.mockResolvedValue({ error: 'bad', code: 'invalid_credentials' })
     render(<SignIn />)
 
     const [emailInput, passwordInput] = screen.getAllByPlaceholderText(/placeholder/i)
@@ -87,7 +86,7 @@ describe('SignIn', () => {
     // which happens after onReCaptchaSuccess fires. We can't drive the real
     // ReCAPTCHA here, so instead we assert the captcha-failure message — which
     // is the documented behaviour when captcha hasn't completed yet.
-    signInMock.mockResolvedValue({ error: 'mfa', code: 'mfa_required' })
+    mockSignIn.mockResolvedValue({ error: 'mfa', code: 'mfa_required' })
     render(<SignIn />)
 
     const [emailInput, passwordInput] = screen.getAllByPlaceholderText(/placeholder/i)

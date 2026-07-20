@@ -22,7 +22,7 @@ describe('PluginHost', () => {
   }
 
   it('activates a plugin and calls activate()', async () => {
-    const activateFn = vi.fn()
+    const activateFn = jest.fn()
     await host.loadPlugin(manifest, { activate: activateFn }, {})
 
     expect(activateFn).toHaveBeenCalledTimes(1)
@@ -49,7 +49,7 @@ describe('PluginHost', () => {
   })
 
   it('marks plugin as errored if activate throws', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     await host.loadPlugin(manifest, {
       activate() { throw new Error('boom') },
     }, {})
@@ -73,7 +73,7 @@ describe('PluginHost', () => {
   })
 
   it('calls deactivate() on the plugin entry when unloading', async () => {
-    const deactivateFn = vi.fn()
+    const deactivateFn = jest.fn()
     await host.loadPlugin(manifest, {
       activate() {},
       deactivate: deactivateFn,

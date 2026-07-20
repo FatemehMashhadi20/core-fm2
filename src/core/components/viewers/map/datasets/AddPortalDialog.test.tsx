@@ -1,31 +1,30 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { act, render, screen, fireEvent } from '@testing-library/react'
 
-const { createMock } = vi.hoisted(() => ({ createMock: vi.fn() }))
+const mockCreate = jest.fn()
 
-vi.mock('../../../ui/Dialog', () => ({
+jest.mock('../../../ui/Dialog', () => ({
   Dialog: ({ open, children }: any) => (open ? <div data-testid="dialog">{children}</div> : null),
   DialogContent: ({ children }: any) => <div>{children}</div>,
   DialogDescription: ({ children }: any) => <p>{children}</p>,
   DialogHeader: ({ children }: any) => <div>{children}</div>,
   DialogTitle: ({ children }: any) => <h2>{children}</h2>,
 }))
-vi.mock('../../../ui/Button', () => ({
+jest.mock('../../../ui/Button', () => ({
   Button: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
 }))
-vi.mock('../../../ui/Input', () => ({
+jest.mock('../../../ui/Input', () => ({
   Input: (props: any) => <input {...props} />,
 }))
-vi.mock('../../../ui/Label', () => ({
+jest.mock('../../../ui/Label', () => ({
   Label: ({ children, htmlFor }: any) => <label htmlFor={htmlFor}>{children}</label>,
 }))
-vi.mock('../../../../hooks/openDataPortals/openDataPortals', () => ({
+jest.mock('../../../../hooks/openDataPortals/openDataPortals', () => ({
   useCreateOpenDataPortal: () => ({
-    createOpenDataPortal: (...args: unknown[]) => createMock(...args),
+    createOpenDataPortal: (...args: unknown[]) => mockCreate(...args),
     isMutating: false,
   }),
 }))
@@ -33,23 +32,23 @@ vi.mock('../../../../hooks/openDataPortals/openDataPortals', () => ({
 import { AddPortalDialog } from './AddPortalDialog'
 
 beforeEach(() => {
-  createMock.mockReset().mockResolvedValue(undefined)
+  mockCreate.mockReset().mockResolvedValue(undefined)
 })
 
 describe('AddPortalDialog', () => {
   it('does not render when open is false', () => {
-    render(<AddPortalDialog open={false} onOpenChange={vi.fn()} />)
+    render(<AddPortalDialog open={false} onOpenChange={jest.fn()} />)
     expect(screen.queryByTestId('dialog')).not.toBeInTheDocument()
   })
 
   it('renders the form when open', () => {
-    render(<AddPortalDialog open={true} onOpenChange={vi.fn()} />)
+    render(<AddPortalDialog open={true} onOpenChange={jest.fn()} />)
     expect(screen.getByText('Add Open Data Portal')).toBeInTheDocument()
     expect(screen.getByLabelText(/Name/i)).toBeInTheDocument()
   })
 
   it('shows "Name is required" when submitting with an empty name', async () => {
-    render(<AddPortalDialog open={true} onOpenChange={vi.fn()} />)
+    render(<AddPortalDialog open={true} onOpenChange={jest.fn()} />)
 
     // Bypass the HTML5 `required` check by submitting the form directly.
     const form = screen.getByText('Add Portal').closest('form')!
@@ -58,11 +57,11 @@ describe('AddPortalDialog', () => {
     })
 
     expect(screen.getByText('Name is required')).toBeInTheDocument()
-    expect(createMock).not.toHaveBeenCalled()
+    expect(mockCreate).not.toHaveBeenCalled()
   })
 
   it('strips empty optional fields before submission', async () => {
-    const onOpenChange = vi.fn()
+    const onOpenChange = jest.fn()
     render(<AddPortalDialog open={true} onOpenChange={onOpenChange} />)
 
     fireEvent.change(screen.getByLabelText(/^Name/i), { target: { value: '  My Portal  ' } })
@@ -72,8 +71,8 @@ describe('AddPortalDialog', () => {
       fireEvent.submit(screen.getByText('Add Portal').closest('form')!)
     })
 
-    expect(createMock).toHaveBeenCalledTimes(1)
-    const payload = createMock.mock.calls[0][0]
+    expect(mockCreate).toHaveBeenCalledTimes(1)
+    const payload = mockCreate.mock.calls[0][0]
     expect(payload.name).toBe('My Portal')          // trimmed
     expect(payload.portalUrl).toBeUndefined()        // empty-string stripped to undefined
     expect(payload.dataManagementSystem).toBeUndefined()
@@ -81,8 +80,8 @@ describe('AddPortalDialog', () => {
   })
 
   it('surfaces an error message when createOpenDataPortal rejects', async () => {
-    createMock.mockRejectedValue(new Error('upstream blew up'))
-    render(<AddPortalDialog open={true} onOpenChange={vi.fn()} />)
+    mockCreate.mockRejectedValue(new Error('upstream blew up'))
+    render(<AddPortalDialog open={true} onOpenChange={jest.fn()} />)
 
     fireEvent.change(screen.getByLabelText(/^Name/i), { target: { value: 'My Portal' } })
 
@@ -94,7 +93,7 @@ describe('AddPortalDialog', () => {
   })
 
   it('Cancel button calls onOpenChange(false)', () => {
-    const onOpenChange = vi.fn()
+    const onOpenChange = jest.fn()
     render(<AddPortalDialog open={true} onOpenChange={onOpenChange} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))

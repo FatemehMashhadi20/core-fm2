@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { renderHook } from '@testing-library/react'
 
-const { mockHas, mockTranslate } = vi.hoisted(() => ({
-  mockHas: vi.fn<(key: string) => boolean>(),
-  mockTranslate: vi.fn<(key: string) => string>(),
-}))
+const mockHas = jest.fn<boolean, [string]>()
+const mockTranslate = jest.fn<string, [string]>()
 
-vi.mock('next-intl', () => ({
+jest.mock('next-intl', () => ({
   useTranslations: () => {
     const fn = (key: string) => mockTranslate(key)
     ;(fn as any).has = (key: string) => mockHas(key)

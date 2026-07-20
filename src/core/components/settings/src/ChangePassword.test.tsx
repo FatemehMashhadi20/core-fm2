@@ -1,62 +1,59 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { act, render, screen, fireEvent } from '@testing-library/react'
 
-const { changePasswordMock, verifyPasswordMock, toastSuccess, toastError } = vi.hoisted(() => ({
-  changePasswordMock: vi.fn(),
-  verifyPasswordMock: vi.fn(),
-  toastSuccess: vi.fn(),
-  toastError: vi.fn(),
-}))
+const mockChangePassword = jest.fn()
+const mockVerifyPassword = jest.fn()
+const mockToastSuccess = jest.fn()
+const mockToastError = jest.fn()
 
-vi.mock('next-intl', () => ({
+jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
-vi.mock('../../../store', () => ({
+jest.mock('../../../store', () => ({
   usePermissions: () => ({ ability: { can: () => true } }),
 }))
-vi.mock('next-auth/react', () => ({
+jest.mock('next-auth/react', () => ({
   useSession: () => ({ data: { user: { id: '7', email: 'alice@example.com' } } }),
 }))
-vi.mock('../../../hooks/users/users', () => ({
+jest.mock('../../../hooks/users/users', () => ({
   useChangePassword: () => ({
-    changePassword: changePasswordMock,
+    changePassword: mockChangePassword,
     isLoading: false,
     error: null,
     success: false,
   }),
   useVerifyPassword: () => ({
-    verifyPassword: verifyPasswordMock,
+    verifyPassword: mockVerifyPassword,
     isLoading: false,
     error: null,
     isValid: false,
   }),
 }))
-vi.mock('../../ui/', () => ({
+jest.mock('../../ui/', () => ({
   Button: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
   Input: (props: any) => <input {...props} />,
 }))
-vi.mock('../../ui/LoadingSpinner', () => ({
+jest.mock('../../ui/LoadingSpinner', () => ({
   LoadingSpinner: () => <span>…</span>,
 }))
-vi.mock('../../authentication/PasswordError', () => ({
+jest.mock('../../authentication/PasswordError', () => ({
   PasswordError: ({ message }: { message?: string }) =>
     message ? <div data-testid="password-error">{message}</div> : null,
 }))
-vi.mock('sonner', () => ({
-  toast: { success: (...a: unknown[]) => toastSuccess(...a), error: (...a: unknown[]) => toastError(...a) },
+jest.mock('sonner', () => ({
+  toast: { success: (...a: unknown[]) => mockToastSuccess(...a), error: (...a: unknown[]) => mockToastError(...a) },
 }))
 
 import ChangePassword from './ChangePassword'
 
 beforeEach(() => {
-  changePasswordMock.mockReset().mockResolvedValue(undefined)
-  verifyPasswordMock.mockReset()
-  toastSuccess.mockReset()
-  toastError.mockReset()
+  mockChangePassword.mockReset().mockResolvedValue(undefined)
+  mockVerifyPassword.mockReset()
+  mockToastSuccess.mockReset()
+  mockToastError.mockReset()
 })
 
 describe('ChangePassword', () => {
@@ -84,7 +81,7 @@ describe('ChangePassword', () => {
   })
 
   it('advances to the new-password step when verifyPassword returns true', async () => {
-    verifyPasswordMock.mockResolvedValue(true)
+    mockVerifyPassword.mockResolvedValue(true)
     render(<ChangePassword isEditing={true} />)
 
     fireEvent.change(screen.getByPlaceholderText('verifyPlaceholder'), {
@@ -100,7 +97,7 @@ describe('ChangePassword', () => {
   })
 
   it('stays on the verify step and toasts when verifyPassword returns false', async () => {
-    verifyPasswordMock.mockResolvedValue(false)
+    mockVerifyPassword.mockResolvedValue(false)
     render(<ChangePassword isEditing={true} />)
 
     fireEvent.change(screen.getByPlaceholderText('verifyPlaceholder'), {
@@ -111,12 +108,12 @@ describe('ChangePassword', () => {
       fireEvent.click(screen.getByRole('button', { name: 'next' }))
     })
 
-    expect(toastError).toHaveBeenCalledWith('noMatch')
+    expect(mockToastError).toHaveBeenCalledWith('noMatch')
     expect(screen.queryByPlaceholderText('New password')).not.toBeInTheDocument()
   })
 
   it('flags a weak new password on save (fails regex) and does not call changePassword', async () => {
-    verifyPasswordMock.mockResolvedValue(true)
+    mockVerifyPassword.mockResolvedValue(true)
     render(<ChangePassword isEditing={true} />)
 
     fireEvent.change(screen.getByPlaceholderText('verifyPlaceholder'), {
@@ -135,11 +132,11 @@ describe('ChangePassword', () => {
     })
 
     expect(screen.getAllByTestId('password-error').length).toBeGreaterThanOrEqual(1)
-    expect(changePasswordMock).not.toHaveBeenCalled()
+    expect(mockChangePassword).not.toHaveBeenCalled()
   })
 
   it('flags a password mismatch on save and does not call changePassword', async () => {
-    verifyPasswordMock.mockResolvedValue(true)
+    mockVerifyPassword.mockResolvedValue(true)
     render(<ChangePassword isEditing={true} />)
 
     fireEvent.change(screen.getByPlaceholderText('verifyPlaceholder'), {
@@ -156,12 +153,12 @@ describe('ChangePassword', () => {
       fireEvent.click(screen.getByRole('button', { name: 'save' }))
     })
 
-    expect(changePasswordMock).not.toHaveBeenCalled()
+    expect(mockChangePassword).not.toHaveBeenCalled()
     expect(screen.getByText('noMatch')).toBeInTheDocument()
   })
 
   it('calls changePassword(current, new) when both passwords validate', async () => {
-    verifyPasswordMock.mockResolvedValue(true)
+    mockVerifyPassword.mockResolvedValue(true)
     render(<ChangePassword isEditing={true} />)
 
     fireEvent.change(screen.getByPlaceholderText('verifyPlaceholder'), {
@@ -178,6 +175,6 @@ describe('ChangePassword', () => {
       fireEvent.click(screen.getByRole('button', { name: 'save' }))
     })
 
-    expect(changePasswordMock).toHaveBeenCalledWith('currentPassword123', 'StrongPassword#1')
+    expect(mockChangePassword).toHaveBeenCalledWith('currentPassword123', 'StrongPassword#1')
   })
 })

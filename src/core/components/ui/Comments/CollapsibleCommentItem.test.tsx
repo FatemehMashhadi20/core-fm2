@@ -1,39 +1,38 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 
 // Permissions module — return an ability that allows everything.
-vi.mock('../../../store', () => ({
+jest.mock('../../../store', () => ({
   usePermissions: () => ({
     ability: { can: () => true },
   }),
 }))
-vi.mock('next-intl', () => ({
+jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
-vi.mock('next-auth/react', () => ({
+jest.mock('next-auth/react', () => ({
   useSession: () => ({ data: { user: { id: '7' } } }),
 }))
-vi.mock('../../../hooks/users/users', () => ({
+jest.mock('../../../hooks/users/users', () => ({
   useUser: () => ({ user: { name: 'Alice', imageFileId: null } }),
 }))
-vi.mock('..', () => ({
+jest.mock('..', () => ({
   Button: ({ children, onClick, disabled, title }: any) => (
     <button onClick={onClick} disabled={disabled} title={title}>{children}</button>
   ),
   Badge: ({ children }: any) => <span>{children}</span>,
   Input: (props: any) => <input {...props} />,
 }))
-vi.mock('../Avatar', () => ({
+jest.mock('../Avatar', () => ({
   Avatar: ({ children }: any) => <div>{children}</div>,
 }))
-vi.mock('../UserAvatar', () => ({
+jest.mock('../UserAvatar', () => ({
   UserAvatar: ({ name }: any) => <span>{name}</span>,
 }))
-vi.mock('date-fns', () => ({
+jest.mock('date-fns', () => ({
   format: (d: Date) => d.toISOString(),
 }))
 
@@ -75,7 +74,7 @@ describe('CollapsibleCommentItem', () => {
   })
 
   it('fires onAction with "delete" + id when the delete button is clicked', () => {
-    const onAction = vi.fn()
+    const onAction = jest.fn()
     render(<CollapsibleCommentItem comment={baseComment} onAction={onAction} />)
 
     fireEvent.click(screen.getByTitle('deleteComment'))
@@ -85,7 +84,7 @@ describe('CollapsibleCommentItem', () => {
 
   it('does not render edit/delete buttons when the session user is not the author', () => {
     const otherAuthor = { ...baseComment, authorId: 99 }
-    const onAction = vi.fn()
+    const onAction = jest.fn()
     render(<CollapsibleCommentItem comment={otherAuthor} onAction={onAction} />)
 
     expect(screen.queryByTitle('editComment')).not.toBeInTheDocument()

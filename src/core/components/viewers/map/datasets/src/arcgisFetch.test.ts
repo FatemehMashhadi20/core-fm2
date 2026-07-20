@@ -7,10 +7,10 @@ const realFetch = global.fetch
 
 afterEach(() => {
   global.fetch = realFetch
-  vi.useRealTimers()
+  jest.useRealTimers()
 })
 
-function mockFetch(impl: ReturnType<typeof vi.fn>) {
+function mockFetch(impl: ReturnType<typeof jest.fn>) {
   global.fetch = impl as unknown as typeof fetch
 }
 
@@ -24,7 +24,7 @@ function jsonResponse(body: unknown, ok = true, status = 200): Response {
 
 describe('fetchWithTimeout', () => {
   it('returns the response on success', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    const fetchMock = jest.fn().mockResolvedValue(jsonResponse({ ok: true }))
     mockFetch(fetchMock)
     const res = await fetchWithTimeout('http://x.com')
     expect(res.ok).toBe(true)
@@ -32,7 +32,7 @@ describe('fetchWithTimeout', () => {
   })
 
   it('aborts immediately when the caller signal is already aborted', async () => {
-    const fetchMock = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+    const fetchMock = jest.fn().mockImplementation((_url: string, init: RequestInit) => {
       // mirror real fetch: if signal is aborted, reject.
       if (init.signal?.aborted) return Promise.reject(new DOMException('aborted', 'AbortError'))
       return Promise.resolve(jsonResponse({}))
@@ -45,7 +45,7 @@ describe('fetchWithTimeout', () => {
 
   it('triggers the controller abort when the caller signal aborts mid-flight', async () => {
     let capturedSignal: AbortSignal | undefined
-    const fetchMock = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+    const fetchMock = jest.fn().mockImplementation((_url: string, init: RequestInit) => {
       capturedSignal = init.signal as AbortSignal
       return new Promise((_, reject) => {
         capturedSignal!.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
@@ -62,7 +62,7 @@ describe('fetchWithTimeout', () => {
 
 describe('fetchArcGISLayerFeatures', () => {
   it('pages through results and stops when exceededTransferLimit is false', async () => {
-    const fetchMock = vi
+    const fetchMock = jest
       .fn()
       .mockResolvedValueOnce(jsonResponse({
         features: Array.from({ length: 1000 }, (_, i) => ({
@@ -84,7 +84,7 @@ describe('fetchArcGISLayerFeatures', () => {
   })
 
   it('stops on a short page even if exceededTransferLimit is missing', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+    const fetchMock = jest.fn().mockResolvedValue(jsonResponse({
       features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [0, 0] } }],
     }))
     mockFetch(fetchMock)
@@ -97,13 +97,13 @@ describe('fetchArcGISLayerFeatures', () => {
   })
 
   it('throws on a non-ok response', async () => {
-    mockFetch(vi.fn().mockResolvedValue(jsonResponse({}, false, 500)))
+    mockFetch(jest.fn().mockResolvedValue(jsonResponse({}, false, 500)))
     const iter = fetchArcGISLayerFeatures('https://x/FeatureServer/0')
     await expect(iter.next()).rejects.toThrow(/HTTP 500/)
   })
 
   it('respects maxPages', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+    const fetchMock = jest.fn().mockResolvedValue(jsonResponse({
       features: Array.from({ length: 1000 }, () => ({
         type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [0, 0] },
       })),
@@ -119,7 +119,7 @@ describe('fetchArcGISLayerFeatures', () => {
   })
 
   it('aborts cleanly when the signal is pre-aborted', async () => {
-    const fetchMock = vi.fn()
+    const fetchMock = jest.fn()
     mockFetch(fetchMock)
     const ctrl = new AbortController()
     ctrl.abort()

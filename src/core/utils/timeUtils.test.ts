@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-import { describe, it, expect, vi, afterEach } from 'vitest'
 import { isSameDay, timeAgo, formatTimestamp, formatDuration } from './timeUtils'
 
 describe('formatDuration', () => {
@@ -39,10 +38,10 @@ describe('isSameDay', () => {
 })
 
 describe('timeAgo (fixed clock)', () => {
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => jest.useRealTimers())
   it('renders compact relative strings', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 0, 15, 12, 0, 0))
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date(2026, 0, 15, 12, 0, 0))
     expect(timeAgo(new Date(2026, 0, 15, 11, 59, 30))).toBe('30s')
     expect(timeAgo(new Date(2026, 0, 15, 11, 55, 0))).toBe('5 min')
     expect(timeAgo(new Date(2026, 0, 15, 9, 0, 0))).toBe('3h')
@@ -51,18 +50,18 @@ describe('timeAgo (fixed clock)', () => {
 })
 
 describe('formatTimestamp (fixed clock)', () => {
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => jest.useRealTimers())
   it('returns empty string for invalid input', () => {
     expect(formatTimestamp('not-a-date')).toBe('')
   })
   it('uses relative time for today', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 0, 15, 12, 0, 0))
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date(2026, 0, 15, 12, 0, 0))
     expect(formatTimestamp(new Date(2026, 0, 15, 11, 55, 0))).toBe('5 min')
   })
   it('uses a localized date string for other days', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 0, 15, 12, 0, 0))
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date(2026, 0, 15, 12, 0, 0))
     const out = formatTimestamp(new Date(2025, 5, 1, 12, 0, 0))
     expect(out).toContain('2025')
   })

@@ -1,35 +1,34 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 
 // Mock the heavy AuthPage shell (uses next/dynamic, AnimatedBackground, MapLibre, etc.)
-vi.mock('./AuthPage', () => ({
+jest.mock('./AuthPage', () => ({
   AuthPage: ({ children }: { children: React.ReactNode }) => <div data-testid="auth-page">{children}</div>,
   useAuthTheme: () => 'dark',
 }))
-vi.mock('next-intl', () => ({
+jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
-vi.mock('next-auth/react', () => ({
-  signIn: vi.fn(),
+jest.mock('next-auth/react', () => ({
+  signIn: jest.fn(),
 }))
-vi.mock('next/navigation', () => ({
+jest.mock('next/navigation', () => ({
   useParams: () => ({ instance: 'canada' }),
 }))
-vi.mock('next/link', () => ({ __esModule: true, default: ({ children, href }: any) => <a href={href}>{children}</a> }))
-vi.mock('next/image', () => ({ __esModule: true, default: (props: any) => <img alt="" {...props} /> }))
+jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href }: any) => <a href={href}>{children}</a> }))
+jest.mock('next/image', () => ({ __esModule: true, default: (props: any) => <img alt="" {...props} /> }))
 
 // The ui barrel transitively imports MapLibre (via Sidebar → TopNavigationBar
 // → Geocoder) and the store (which uses next-auth/react). Stub just the parts
 // Signup needs.
-vi.mock('../ui', () => ({
+jest.mock('../ui', () => ({
   Button: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
   Input: (props: any) => <input {...props} />,
 }))
-vi.mock('./PasswordError', () => ({
+jest.mock('./PasswordError', () => ({
   PasswordError: ({ message }: { message?: string }) =>
     message ? <div data-testid="password-error">{message}</div> : null,
 }))

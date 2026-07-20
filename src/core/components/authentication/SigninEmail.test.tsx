@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { render, screen } from '@testing-library/react'
 
-vi.mock('next/image', () => ({
+jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => <img alt={props.alt || ''} {...props} />,
 }))

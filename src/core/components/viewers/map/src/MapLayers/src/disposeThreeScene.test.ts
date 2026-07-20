@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-import { describe, it, expect, vi } from 'vitest'
 import * as THREE from 'three'
 import { disposeThreeScene } from './disposeThreeScene'
 
@@ -13,15 +12,15 @@ describe('disposeThreeScene', () => {
     const material = new THREE.MeshBasicMaterial({ map: texture })
     scene.add(new THREE.Mesh(geometry, material))
 
-    const geoSpy = vi.spyOn(geometry, 'dispose')
-    const matSpy = vi.spyOn(material, 'dispose')
-    const texSpy = vi.spyOn(texture, 'dispose')
+    const geoSpy = jest.spyOn(geometry, 'dispose')
+    const matSpy = jest.spyOn(material, 'dispose')
+    const texSpy = jest.spyOn(texture, 'dispose')
 
     disposeThreeScene(scene)
 
-    expect(geoSpy).toHaveBeenCalledOnce()
-    expect(matSpy).toHaveBeenCalledOnce()
-    expect(texSpy).toHaveBeenCalledOnce()
+    expect(geoSpy).toHaveBeenCalledTimes(1)
+    expect(matSpy).toHaveBeenCalledTimes(1)
+    expect(texSpy).toHaveBeenCalledTimes(1)
     expect(scene.children).toHaveLength(0)
   })
 
@@ -32,11 +31,11 @@ describe('disposeThreeScene', () => {
       new THREE.MeshStandardMaterial(),
     ])
     scene.add(mesh)
-    const spies = (mesh.material as THREE.Material[]).map((m) => vi.spyOn(m, 'dispose'))
+    const spies = (mesh.material as THREE.Material[]).map((m) => jest.spyOn(m, 'dispose'))
 
     disposeThreeScene(scene)
 
-    spies.forEach((s) => expect(s).toHaveBeenCalledOnce())
+    spies.forEach((s) => expect(s).toHaveBeenCalledTimes(1))
   })
 
   it('skips non-mesh objects without throwing and still clears the graph', () => {

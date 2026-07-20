@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-import { describe, it, expect, vi } from 'vitest'
 // @thatopen/components is imported in the reducer only as a TYPE (erased at compile
 // time), so importing the reducer does not pull the BIM runtime into the node test env.
 import { BimReducer, type BimState } from './reducer'
@@ -32,7 +31,7 @@ describe('BimReducer', () => {
   })
 
   it('TOGGLE_BIM_TO_MAP adds, then a second toggle removes it (dedup by bimFile.id)', () => {
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { })
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => { })
     const payload = { buildingModel: { bimFile: { id: 1, name: 'a.ifc' }, building: null } }
     let s = BimReducer(base, { type: 'TOGGLE_BIM_TO_MAP', payload } as never)
     expect(s.bimModelsAddedToMap).toHaveLength(1)

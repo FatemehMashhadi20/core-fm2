@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2025 Collab Digital Twins
 
-// @vitest-environment jsdom
 import * as React from 'react'
 import { renderHook } from '@testing-library/react'
 
 // The hook imports the store barrel, which transitively pulls in next-auth/react
 // (an ESM module the bundler can't transform out of the box). We mock the barrel
 // down to just the BimContext re-export the hook actually consumes.
-vi.mock('../../../../../store', async () => ({
-  BimContext: (
-    await vi.importActual<typeof import('../../../../../store/BIM/context')>(
-      '../../../../../store/BIM/context',
-    )
+jest.mock('../../../../../store', () => ({
+  BimContext: jest.requireActual<typeof import('../../../../../store/BIM/context')>(
+    '../../../../../store/BIM/context',
   ).BimContext,
 }))
 
@@ -38,7 +35,7 @@ function makeState({
         bimModelsAddedToMap: multi ?? [],
       },
     },
-    dispatch: vi.fn(),
+    dispatch: jest.fn(),
   }
 }
 
