@@ -65,8 +65,28 @@ describe('SignIn', () => {
     )
   })
 
-  it('shows "Invalid email or password" on invalid_credentials', async () => {
+  it('shows the captcha-failure message on invalid_credentials when captcha hasn\'t been completed', async () => {
+    // handleSubmit checks `!captchaStatus` before `result.code === 'invalid_credentials'`,
+    // so this branch is shadowed until the ReCAPTCHA widget's onChange has fired. We can't
+    // drive the real ReCAPTCHA here (it's mocked as a static div), so captchaStatus stays
+    // false and "Captcha Verification Failed." is what actually renders — same gating
+    // documented in the mfa_required test below.
     mockSignIn.mockResolvedValue({ error: 'bad', code: 'invalid_credentials' })
+    render(<SignIn />)
+
+    const [emailInput, passwordInput] = screen.getAllByPlaceholderText(/placeholder/i)
+    fireEvent.change(emailInput, { target: { value: 'a@b.com' } })
+    fireEvent.change(passwordInput, { target: { value: 'wrongpw1234567' } })
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /login/i }))
+    })
+
+    expect(screen.getByText(/Captcha Verification Failed/i)).toBeInTheDocument()
+  })
+
+  it('shows "Invalid email or password" for a whitelist_invalid_credentials response (checked before the captcha gate)', async () => {
+    mockSignIn.mockResolvedValue({ error: 'bad', code: 'whitelist_invalid_credentials' })
     render(<SignIn />)
 
     const [emailInput, passwordInput] = screen.getAllByPlaceholderText(/placeholder/i)
