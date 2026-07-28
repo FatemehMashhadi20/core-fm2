@@ -205,6 +205,25 @@ export function PointCloudsSection({ files, pointcloudApiUrl, buildingId }: Poin
     return res.json()
   }
 
+  // The converter creates the File record before the bytes exist (upload goes straight to
+  // storage via presigned URL), so extension/mimeType/sizeBytes are unset until we patch them
+  // in ourselves once the upload finishes.
+  async function updateFileMetadata(
+    fileId: string,
+    patch: { extension: string; mimeType: string; sizeBytes: number }
+  ): Promise<void> {
+    const res = await fetch(`/api/files/${encodeURIComponent(fileId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    })
+
+    if (!res.ok) {
+      const msg = await res.text()
+      throw new Error(`Update file metadata failed: ${msg || res.status}`)
+    }
+  }
+
   // Upload to presigned URL
   function uploadToPresignedUrl(
     url: string,
@@ -379,6 +398,16 @@ export function PointCloudsSection({ files, pointcloudApiUrl, buildingId }: Poin
       console.log('Upload complete!')
       toast.success('LAZ file uploaded successfully')
 
+      try {
+        await updateFileMetadata(pointCloud.id, {
+          extension: fileExt.endsWith('.laz') ? 'laz' : 'las',
+          mimeType: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+        })
+      } catch (metadataError) {
+        console.error('Failed to update point cloud file metadata:', metadataError)
+      }
+
       console.log('Starting conversion...')
       const conversion = await startConversion(pointCloud.id)
       console.log('Conversion started:', conversion.jobId)
@@ -387,10 +416,10 @@ export function PointCloudsSection({ files, pointcloudApiUrl, buildingId }: Poin
     } catch (error) {
       console.error('Error uploading point cloud:', error)
 
-      alert(
+      toast.error(
         error instanceof Error
-          ? `Failed to upload: ${error.message}`
-          : 'Failed to upload point cloud'
+          ? t('uploadFailedWithReason', { error: error.message })
+          : t('uploadFailed')
       )
     } finally {
       setUploadingFile(null)

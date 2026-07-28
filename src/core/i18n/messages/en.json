@@ -1014,7 +1014,9 @@
     "deleteFailedWithReason": "Failed to delete: {error}",
     "convertStarted": "Conversion started for \"{name}\". Job ID: {jobId}",
     "convertFailed": "Failed to start conversion",
-    "convertFailedWithReason": "Failed to start conversion: {error}"
+    "convertFailedWithReason": "Failed to start conversion: {error}",
+    "uploadFailed": "Failed to upload point cloud. Click the retry upload button to try again.",
+    "uploadFailedWithReason": "Failed to upload: {error}. Click the retry upload button to try again."
   },
   "PropertiesMenuHeader": {
     "closeButton": "Close",

@@ -1014,7 +1014,9 @@
     "deleteFailedWithReason": "Échec de la suppression : {error}",
     "convertStarted": "Conversion lancée pour \"{name}\". ID de tâche : {jobId}",
     "convertFailed": "Échec du démarrage de la conversion",
-    "convertFailedWithReason": "Échec du démarrage de la conversion : {error}"
+    "convertFailedWithReason": "Échec du démarrage de la conversion : {error}",
+    "uploadFailed": "Échec du téléchargement du nuage de points. Cliquez sur le bouton de nouvelle tentative pour réessayer.",
+    "uploadFailedWithReason": "Échec du téléchargement : {error}. Cliquez sur le bouton de nouvelle tentative pour réessayer."
   },
   "PropertiesMenuHeader": {
     "closeButton": "Fermer",

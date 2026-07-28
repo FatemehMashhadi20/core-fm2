@@ -1014,7 +1014,9 @@
     "deleteFailedWithReason": "Error al eliminar: {error}",
     "convertStarted": "Conversión iniciada para \"{name}\". ID del trabajo: {jobId}",
     "convertFailed": "Error al iniciar la conversión",
-    "convertFailedWithReason": "Error al iniciar la conversión: {error}"
+    "convertFailedWithReason": "Error al iniciar la conversión: {error}",
+    "uploadFailed": "Error al subir la nube de puntos. Haga clic en el botón de reintentar para volver a intentarlo.",
+    "uploadFailedWithReason": "Error al subir: {error}. Haga clic en el botón de reintentar para volver a intentarlo."
   },
   "PropertiesMenuHeader": {
     "closeButton": "Cerrar",
